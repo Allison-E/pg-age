@@ -84,4 +84,60 @@ public static partial class LogMessages
         string connectionString,
         string reason);
     #endregion
+
+    #region Internal
+    [LoggerMessage(
+        EventId = AgeClientEventId.CREATING_GRAPH,
+        Level = LogLevel.Debug,
+        Message = "Creating graph '{graphName}'")]
+    public static partial void CreatingGraph(
+        this ILogger logger,
+        string graphName);
+
+    [LoggerMessage(
+        EventId = AgeClientEventId.GRAPH_CREATED,
+        Level = LogLevel.Information,
+        Message = "Created graph '{graphName}'")]
+    public static partial void GraphCreated(
+        this ILogger logger,
+        string graphName);
+    
+    [LoggerMessage(
+        EventId = AgeClientEventId.GRAPH_NOT_CREATED_ERROR,
+        Level = LogLevel.Error,
+        Message = "Could not create graph '{graphName}'. Reason: {reason}")]
+    public static partial void GraphNotCreatedError(
+        this ILogger logger,
+        string graphName,
+        string reason,
+        Exception exception);
+    
+    [LoggerMessage(
+        EventId = AgeClientEventId.DROPPING_GRAPH,
+        Level = LogLevel.Debug,
+        Message = "Dropping graph '{graphName}'. Cascade: {cascade}")]
+    public static partial void DroppingGraph(
+        this ILogger logger,
+        string graphName,
+        bool cascade);
+
+    [LoggerMessage(
+        EventId = AgeClientEventId.GRAPH_DROPPED,
+        Level = LogLevel.Information,
+        Message = "Dropped graph '{graphName}'. Cascade: {cascade}")]
+    public static partial void GraphDropped(
+        this ILogger logger,
+        string graphName,
+        bool cascade);
+    
+    [LoggerMessage(
+        EventId = AgeClientEventId.GRAPH_NOT_DROPPED_ERROR,
+        Level = LogLevel.Error,
+        Message = "Could not drop graph '{graphName}'. Reason: {reason}")]
+    public static partial void GraphNotDroppedError(
+        this ILogger logger,
+        string graphName,
+        string reason,
+        Exception exception);
+    #endregion
 }

@@ -10,8 +10,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     private NpgsqlDataSource? _dataSource;
     private AgeConfiguration? _configuration;
 
-    private bool _isLoaded = false;
-    private bool _isDisposed = false;     
+    private bool _isDisposed = false;
 
     public string ConnectionString => _dataSource!.ConnectionString;
 
@@ -24,15 +23,15 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
     ~AgeClient() => Dispose();
 
-    public async Task LoadAsync(CancellationToken cancellationToken = default)
+    public async Task CreateExtensionOnDatabaseAsync(
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var connection = await OpenConnectionAsync(cancellationToken);
+            await using var connection = await OpenConnectionAsync(
+                cancellationToken);
             await CreateExtensionAsync(connection, cancellationToken);
             await LoadExtensionAsync(connection, cancellationToken);
-
-            _isLoaded = true;
         }
         catch (Exception)
         {
@@ -40,12 +39,92 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
     }
 
-    public Task CreateGraphAsync(string graphName, CancellationToken cancellationToken = default)
+    public async Task CreateGraphAsync(
+        string graphName,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var connection = await OpenConnectionAsync(cancellationToken);
+            await LoadExtensionAsync(connection, cancellationToken);
+
+            await using var command = new NpgsqlCommand(
+                "SELECT * FROM create_graph($1);",
+                connection)
+            {
+                Parameters =
+                {
+                    new() { Value = graphName },
+                }
+            };
+
+            _configuration!.Logger.CommandLogger.CreatingGraph(graphName);
+            await command.ExecuteNonQueryAsync(cancellationToken)
+                .ConfigureAwait(false);
+            _configuration!.Logger.CommandLogger.GraphCreated(graphName);
+        }
+        catch (PostgresException e)
+        {
+            _configuration!.Logger.CommandLogger.GraphNotCreatedError(
+                graphName,
+                e.MessageText,
+                e);
+            throw new AgeException($"Could not create graph '{graphName}'.", e);
+        }
+        catch (Exception e)
+        {
+            _configuration!.Logger.CommandLogger.GraphNotCreatedError(
+                graphName,
+                e.Message,
+                e);
+            throw new AgeException($"Could not create graph '{graphName}'.", e);
+        }
     }
 
-    public Task DropGraphAsync(string graphName, bool cascade = false, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public async Task DropGraphAsync(
+        string graphName,
+        bool cascade = false,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var connection = await OpenConnectionAsync(cancellationToken);
+            await LoadExtensionAsync(connection, cancellationToken);
+
+            await using var command = new NpgsqlCommand(
+                "SELECT * FROM drop_graph($1, $2);",
+                connection)
+            {
+                Parameters =
+                {
+                    new() { Value = graphName },
+                    new() { Value = cascade },
+                }
+            };
+
+            _configuration!.Logger.CommandLogger.DroppingGraph(graphName, cascade);
+            await command.ExecuteNonQueryAsync(cancellationToken)
+                .ConfigureAwait(false);
+            _configuration!.Logger.CommandLogger.GraphDropped(graphName, cascade);
+        }
+        catch (PostgresException e)
+        {
+            _configuration!.Logger.CommandLogger.GraphNotDroppedError(
+                graphName,
+                e.MessageText,
+                e);
+            throw new AgeException($"Could not create graph '{graphName}'.", e);
+        }
+        catch (Exception e)
+        {
+            _configuration!.Logger.CommandLogger.GraphNotDroppedError(
+                graphName,
+                e.Message,
+                e);
+            throw new AgeException($"Could not create graph '{graphName}'.", e);
+        }
+    }
+
     public Task<AgType> ExecuteCypherAsync(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     public Task<AgType<T>> ExecuteCypherAsync<T>(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
@@ -56,7 +135,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
         _isDisposed = true;
         _dataSource!.Dispose();
-        _isLoaded = false;
         _dataSource = null;
         _configuration = null;
     }
@@ -68,8 +146,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
         _isDisposed = true;
         await _dataSource!.DisposeAsync();
-        _isLoaded = false;
-        _dataSource =null;
+        _dataSource = null;
         _configuration = null;
         GC.SuppressFinalize(this);
     }
