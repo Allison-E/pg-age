@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34004.107
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F6D659A1-FD1D-4EFF-BB4B-D28114D01A97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApacheAGE", "ApacheAGE\ApacheAGE.csproj", "{E71F8511-A4F9-4FD3-9D9F-0788A4B2FB34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApacheAGE", "src\ApacheAGE\ApacheAGE.csproj", "{9B5ABDF1-7C23-4E27-AF79-79869D325A99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,16 +13,16 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E71F8511-A4F9-4FD3-9D9F-0788A4B2FB34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E71F8511-A4F9-4FD3-9D9F-0788A4B2FB34}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E71F8511-A4F9-4FD3-9D9F-0788A4B2FB34}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E71F8511-A4F9-4FD3-9D9F-0788A4B2FB34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B5ABDF1-7C23-4E27-AF79-79869D325A99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B5ABDF1-7C23-4E27-AF79-79869D325A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B5ABDF1-7C23-4E27-AF79-79869D325A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B5ABDF1-7C23-4E27-AF79-79869D325A99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E71F8511-A4F9-4FD3-9D9F-0788A4B2FB34} = {F6D659A1-FD1D-4EFF-BB4B-D28114D01A97}
+		{9B5ABDF1-7C23-4E27-AF79-79869D325A99} = {F6D659A1-FD1D-4EFF-BB4B-D28114D01A97}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E960FF17-99B2-4BBD-BD3C-B4F99C5F0BA0}
