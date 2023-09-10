@@ -3,7 +3,7 @@
 /// <summary>
 /// Defines clients for use with the Apache AGE extension for PostgreSQL.
 /// </summary>
-internal interface IAgeClient
+public interface IAgeClient
 {
     /// <summary>
     /// Connect to the database.

@@ -10,7 +10,7 @@
 /// </remarks>
 /// <typeparam name="T">
 /// </typeparam>
-internal class AgType<T>
+public class AgType<T>
 {
     /// <summary>
     /// Data value.
@@ -29,6 +29,7 @@ internal class AgType<T>
     /// </remarks>
     public AgType(object value)
     {
+        // TODO: Create a utility class to handle conversions better.
         Value = (T)value;
     }
 }
@@ -36,7 +37,7 @@ internal class AgType<T>
 /// <summary>
 /// Represents the data type returned by AGE.
 /// </summary>
-internal class AgType: AgType<object>
+public class AgType: AgType<object>
 {
     /// <summary>
     /// Creates a new instance of <see cref="AgType"/>.
