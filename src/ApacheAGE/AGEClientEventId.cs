@@ -1,16 +1,22 @@
 ﻿namespace ApacheAGE;
 
-public static class AGEClientEventId
+public static class AgeClientEventId
 {
-    public const int OpeningConnection = 1000;
-    public const int ConnectionOpened = 1001;
+    #region Connection
+    public const int OPENING_CONNECTION          = 1000;
+    public const int CONNECTION_OPENED           = 1001;
 
-    public const int CreatingExtension = 1100;
-    public const int ExtensionCreated = 1101;
-    public const int LoadingExtension = 1102;
-    public const int ExtensionLoaded = 1103;
-    public const int AddingCatalogToSearchPath = 1104;
-    public const int CatalogAddedToSearchPath = 1105;
+    public const int CONNECTION_ERROR            = 1900;
+    #endregion
 
-    public const int ExtensionNotInstalledError = 1900;
+
+    #region Load extension
+    public const int CREATING_EXTENSION             = 2100;
+    public const int EXTENSION_CREATED              = 2101;
+    public const int LOADING_EXTENSION              = 2102;
+    public const int EXTENSION_LOADED               = 2103;
+
+    public const int EXTENSION_NOT_CREATED_ERROR  = 2900;
+    public const int EXTENSION_NOT_LOADED_ERROR  = 2901;
+    #endregion
 }

@@ -6,17 +6,6 @@
 public interface IAgeClient
 {
     /// <summary>
-    /// Connect to the database.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Token for propagating a notification to stop the running operation.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task"/> for monitoring the progress of the operation.
-    /// </returns>
-    Task ConnectAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Create a graph.
     /// </summary>
     /// <param name="graphName">
@@ -29,17 +18,6 @@ public interface IAgeClient
     Task CreateGraphAsync(
         string graphName,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Disconnect from the database.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Token for propagating a notification to stop the running operation.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task"/> for monitoring the progress of the operation.
-    /// </returns>
-    Task DisconnectAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Drop the given graph.
@@ -107,4 +85,19 @@ public interface IAgeClient
         string graphName,
         string cypherQuery,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Install and load the AGE extension in the current database.
+    /// </summary>
+    /// <remarks>
+    /// This needs to be called only once for the lifetime of this instance
+    /// of <see cref="IAgeClient"/>.
+    /// </remarks>
+    /// <param name="cancellationToken">
+    /// Token for propagating a notification to stop the running operation.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> for monitoring the progress of the operation.
+    /// </returns>
+    Task LoadAsync(CancellationToken cancellationToken = default);
 }
