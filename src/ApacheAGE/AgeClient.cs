@@ -21,7 +21,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         _configuration = configuration;
     }
 
-    ~AgeClient() => Dispose();
+    ~AgeClient() => Dispose(false);
 
     public async Task CreateExtensionOnDatabaseAsync(
         CancellationToken cancellationToken = default)
@@ -128,28 +128,49 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     public Task<AgType> ExecuteCypherAsync(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     public Task<AgType<T>> ExecuteCypherAsync<T>(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
+    #region Dispose
     public void Dispose()
     {
-        if (_isDisposed)
-            return;
-
-        _isDisposed = true;
-        _dataSource!.Dispose();
-        _dataSource = null;
-        _configuration = null;
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed)
-            return;
-
-        _isDisposed = true;
-        await _dataSource!.DisposeAsync();
-        _dataSource = null;
-        _configuration = null;
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            if (disposing)
+            {
+                _configuration = null;
+            }
+
+        _dataSource!.Dispose();
+        _dataSource = null;
+            _isDisposed = true;
+        }
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            if (disposing)
+    {
+                _configuration = null;
+            }
+
+        await _dataSource!.DisposeAsync();
+        _dataSource = null;
+            _isDisposed = true;
+        }
+    }
+    #endregion
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(
         CancellationToken cancellationToken = default)
