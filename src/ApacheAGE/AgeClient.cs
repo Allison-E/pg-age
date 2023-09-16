@@ -83,8 +83,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
     }
 
-    public Task DisconnectAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
     public async Task DropGraphAsync(
         string graphName,
         bool cascade = false,

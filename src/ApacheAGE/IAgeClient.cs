@@ -32,18 +32,6 @@ public interface IAgeClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Perform the necessary actions to unload and remove the AGE extension
-    /// in the database.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Token for propagating a notification  stop the running operation.
-    /// </param>
-    /// <returns>
-    /// A <see cref="Task"/> for monitoring the progress of the operation.
-    /// </returns>
-    Task DisconnectAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Drop the given graph.
     /// </summary>
     /// <param name="graphName">
