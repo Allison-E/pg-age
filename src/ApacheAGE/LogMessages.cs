@@ -6,14 +6,6 @@ public static partial class LogMessages
 {
     #region Connection
     [LoggerMessage(
-    EventId = AgeClientEventId.OPENING_CONNECTION,
-    Level = LogLevel.Debug,
-    Message = "Opening connection to {connectionString}")]
-    public static partial void OpeningConnection(
-        ILogger logger,
-        string connectionString);
-
-    [LoggerMessage(
     EventId = AgeClientEventId.CONNECTION_OPENED,
     Level = LogLevel.Debug,
     Message = "Connection opened to {connectionString}")]
@@ -33,51 +25,20 @@ public static partial class LogMessages
     #endregion
 
     #region Internals
-    [LoggerMessage(
-    EventId = AgeClientEventId.CREATING_EXTENSION,
-    Level = LogLevel.Debug,
-    Message = "Creating AGE extension in {connectionString}")]
-    public static partial void CreatingExtension(
-    ILogger logger,
-    string connectionString);
 
     [LoggerMessage(
         EventId = AgeClientEventId.EXTENSION_CREATED,
         Level = LogLevel.Debug,
-        Message = "Created AGE extension in {connectionString}")]
+        Message = "Created 'age' extension in {connectionString}")]
     public static partial void ExtensionCreated(
-        ILogger logger,
-        string connectionString);
-
-    [LoggerMessage(
-        EventId = AgeClientEventId.LOADING_EXTENSION,
-        Level = LogLevel.Debug,
-        Message = "Loading AGE extension in {connectionString}")]
-    public static partial void LoadingExtension(
         ILogger logger,
         string connectionString);
 
     [LoggerMessage(
         EventId = AgeClientEventId.EXTENSION_LOADED,
         Level = LogLevel.Debug,
-        Message = "AGE extension loaded in {connectionString}")]
+        Message = "Loaded 'age' in {connectionString}")]
     public static partial void ExtensionLoaded(
-        ILogger logger,
-        string connectionString);
-
-    [LoggerMessage(
-    EventId = AgeClientEventId.DROPPING_EXTENSION,
-    Level = LogLevel.Debug,
-    Message = "Dropping AGE extension in {connectionString}")]
-    public static partial void DroppingExtension(
-    ILogger logger,
-    string connectionString);
-
-    [LoggerMessage(
-        EventId = AgeClientEventId.EXTENSION_DROPPED,
-        Level = LogLevel.Debug,
-        Message = "Dropped AGE extension in {connectionString}")]
-    public static partial void ExtensionDropped(
         ILogger logger,
         string connectionString);
 
@@ -119,16 +80,6 @@ public static partial class LogMessages
         string reason);
 
     [LoggerMessage(
-        EventId = AgeClientEventId.EXTENSION_NOT_DROPPED_ERROR,
-        Level = LogLevel.Warning,
-        Message = "AGE extension not dropped in {connectionString}. Reason: {reason}",
-        SkipEnabledCheck = true)]
-    public static partial void ExtensionNotDroppedError(
-        ILogger logger,
-        string connectionString,
-        string reason);
-    
-    [LoggerMessage(
         EventId = AgeClientEventId.AG_CATALOG_NOT_ADDED_TO_SEARCH_PATH_ERROR,
         Level = LogLevel.Warning,
         Message = "'ag_catalog' could not be added to search_path. Reason: {reason}. Will use the full qualified name instead")]
@@ -140,13 +91,6 @@ public static partial class LogMessages
     #endregion
 
     #region Commands
-    [LoggerMessage(
-        EventId = AgeClientEventId.CREATING_GRAPH,
-        Level = LogLevel.Debug,
-        Message = "Creating graph '{graphName}'")]
-    public static partial void CreatingGraph(
-        ILogger logger,
-        string graphName);
 
     [LoggerMessage(
         EventId = AgeClientEventId.GRAPH_CREATED,
@@ -167,15 +111,6 @@ public static partial class LogMessages
         Exception exception);
 
     [LoggerMessage(
-        EventId = AgeClientEventId.DROPPING_GRAPH,
-        Level = LogLevel.Debug,
-        Message = "Dropping graph '{graphName}'. Cascade: {cascade}")]
-    public static partial void DroppingGraph(
-        ILogger logger,
-        string graphName,
-        bool cascade);
-
-    [LoggerMessage(
         EventId = AgeClientEventId.GRAPH_DROPPED,
         Level = LogLevel.Information,
         Message = "Dropped graph '{graphName}'. Cascade: {cascade}")]
@@ -183,6 +118,14 @@ public static partial class LogMessages
         ILogger logger,
         string graphName,
         bool cascade);
+
+    [LoggerMessage(
+        EventId = AgeClientEventId.CYPHER_QUERY_EXECUTED,
+        Level = LogLevel.Information,
+        Message = "Executed query\n{query}")]
+    public static partial void CypherQueryExecuted(
+        ILogger logger,
+        string query);
 
     #region Error logs
 

@@ -50,10 +50,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 }
             };
 
-            LogMessages.CreatingGraph(
-                _configuration!.Logger.CommandLogger,
-                graphName);
-
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -103,11 +99,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                     new() { Value = cascade },
                 }
             };
-
-            LogMessages.DroppingGraph(
-                _configuration!.Logger.CommandLogger,
-                graphName,
-                cascade);
 
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -240,10 +231,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            LogMessages.OpeningConnection(
-                _configuration!.Logger.ConnectionLogger,
-                ConnectionString);
-
             var connection = await _dataSource!.OpenConnectionAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -270,10 +257,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            LogMessages.CreatingExtension(
-                _configuration!.Logger.CommandLogger,
-                ConnectionString);
-
             await using var command = new NpgsqlCommand(
                 "CREATE EXTENSION IF NOT EXISTS age;",
                 connection);
@@ -355,10 +338,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            LogMessages.LoadingExtension(
-                _configuration!.Logger.ConnectionLogger,
-                ConnectionString);
-
             await using var batch = new NpgsqlBatch(connection)
             {
                 BatchCommands =
