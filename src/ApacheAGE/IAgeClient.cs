@@ -6,19 +6,16 @@
 public interface IAgeClient
 {
     /// <summary>
-    /// Create AGE extension in the database.
+    /// Perform the necessary actions to create and load the AGE extension
+    /// in the database.
     /// </summary>
-    /// <remarks>
-    /// This needs to be called only once for the lifetime of this instance
-    /// of <see cref="IAgeClient"/>.
-    /// </remarks>
     /// <param name="cancellationToken">
     /// Token for propagating a notification  stop the running operation.
     /// </param>
-    /// <returns>to
+    /// <returns>
     /// A <see cref="Task"/> for monitoring the progress of the operation.
     /// </returns>
-    Task CreateExtensionOnDatabaseAsync(CancellationToken cancellationToken = default);
+    Task ConnectAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a graph.
@@ -33,6 +30,18 @@ public interface IAgeClient
     Task CreateGraphAsync(
         string graphName,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Perform the necessary actions to unload and remove the AGE extension
+    /// in the database.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Token for propagating a notification  stop the running operation.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> for monitoring the progress of the operation.
+    /// </returns>
+    Task DisconnectAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Drop the given graph.

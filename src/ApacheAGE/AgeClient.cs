@@ -10,6 +10,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     private NpgsqlDataSource? _dataSource;
     private AgeConfiguration? _configuration;
 
+    private bool _agCatalogLoaded = false;
     private bool _isDisposed = false;
 
     public string ConnectionString => _dataSource!.ConnectionString;
@@ -23,20 +24,11 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
     ~AgeClient() => Dispose(false);
 
-    public async Task CreateExtensionOnDatabaseAsync(
-        CancellationToken cancellationToken = default)
+    public async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            await using var connection = await OpenConnectionAsync(
-                cancellationToken);
-            await CreateExtensionAsync(connection, cancellationToken);
-            await LoadExtensionAsync(connection, cancellationToken);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await CreateExtensionAsync(connection, cancellationToken);
+        await AddAgCatalogToSearchPath(connection, cancellationToken);
     }
 
     public async Task CreateGraphAsync(
@@ -58,28 +50,40 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 }
             };
 
-            _configuration!.Logger.CommandLogger.CreatingGraph(graphName);
+            LogMessages.CreatingGraph(
+                _configuration!.Logger.CommandLogger,
+                graphName);
+
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
-            _configuration!.Logger.CommandLogger.GraphCreated(graphName);
+
+            LogMessages.GraphCreated(
+                _configuration!.Logger.CommandLogger,
+                graphName);
         }
         catch (PostgresException e)
         {
-            _configuration!.Logger.CommandLogger.GraphNotCreatedError(
+            LogMessages.GraphNotCreatedError(
+                _configuration!.Logger.CommandLogger,
                 graphName,
                 e.MessageText,
                 e);
+
             throw new AgeException($"Could not create graph '{graphName}'.", e);
         }
         catch (Exception e)
         {
-            _configuration!.Logger.CommandLogger.GraphNotCreatedError(
+            LogMessages.GraphNotCreatedError(
+                _configuration!.Logger.CommandLogger,
                 graphName,
                 e.Message,
                 e);
+
             throw new AgeException($"Could not create graph '{graphName}'.", e);
         }
     }
+
+    public Task DisconnectAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     public async Task DropGraphAsync(
         string graphName,
@@ -102,30 +106,91 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 }
             };
 
-            _configuration!.Logger.CommandLogger.DroppingGraph(graphName, cascade);
+            LogMessages.DroppingGraph(
+                _configuration!.Logger.CommandLogger,
+                graphName,
+                cascade);
+
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
-            _configuration!.Logger.CommandLogger.GraphDropped(graphName, cascade);
+
+            LogMessages.GraphDropped(
+                _configuration!.Logger.CommandLogger,
+                graphName,
+                cascade);
         }
         catch (PostgresException e)
         {
-            _configuration!.Logger.CommandLogger.GraphNotDroppedError(
+            LogMessages.GraphNotDroppedError(
+                _configuration!.Logger.CommandLogger,
                 graphName,
                 e.MessageText,
                 e);
+
+            throw new AgeException($"Could not drop graph '{graphName}'.", e);
+        }
+        catch (Exception e)
+        {
+            LogMessages.GraphNotDroppedError(
+                _configuration!.Logger.CommandLogger,
+                graphName,
+                e.Message,
+                e);
+
+            throw new AgeException($"Could not drop graph '{graphName}'.", e);
+        }
+    }
+
+    public async Task<AgType> ExecuteCypherAsync(
+        string graphName,
+        string cypherQuery,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var connection = await OpenConnectionAsync(cancellationToken);
+            await LoadExtensionAsync(connection, cancellationToken);
+
+            await using var command = new NpgsqlCommand(
+                "SELECT * FROM cypher($1, $2);",
+                connection)
+            {
+                Parameters =
+                {
+                    new() { Value = graphName },
+                    new() { Value = cypherQuery },
+                }
+            };
+
+            //_configuration!.Logger.CommandLogger.DroppingGraph(graphName, cascade);
+            //await command.ExecuteNonQueryAsync(cancellationToken)
+            //    .ConfigureAwait(false);
+            //_configuration!.Logger.CommandLogger.GraphDropped(graphName, cascade);
+
+            throw new NotImplementedException();
+        }
+        catch (PostgresException e)
+        {
+            LogMessages.GraphNotDroppedError(
+                _configuration!.Logger.CommandLogger,
+                graphName,
+                e.MessageText,
+                e);
+
             throw new AgeException($"Could not create graph '{graphName}'.", e);
         }
         catch (Exception e)
         {
-            _configuration!.Logger.CommandLogger.GraphNotDroppedError(
+            LogMessages.GraphNotDroppedError(
+                _configuration!.Logger.CommandLogger,
                 graphName,
                 e.Message,
                 e);
+
             throw new AgeException($"Could not create graph '{graphName}'.", e);
         }
     }
 
-    public Task<AgType> ExecuteCypherAsync(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     public Task<AgType<T>> ExecuteCypherAsync<T>(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     #region Dispose
@@ -150,8 +215,8 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 _configuration = null;
             }
 
-        _dataSource!.Dispose();
-        _dataSource = null;
+            _dataSource!.Dispose();
+            _dataSource = null;
             _isDisposed = true;
         }
     }
@@ -161,12 +226,12 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         if (!_isDisposed)
         {
             if (disposing)
-    {
+            {
                 _configuration = null;
             }
 
-        await _dataSource!.DisposeAsync();
-        _dataSource = null;
+            await _dataSource!.DisposeAsync();
+            _dataSource = null;
             _isDisposed = true;
         }
     }
@@ -177,18 +242,26 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            _configuration!.Logger.ConnectionLogger.OpeningConnection(ConnectionString);
+            LogMessages.OpeningConnection(
+                _configuration!.Logger.ConnectionLogger,
+                ConnectionString);
 
             var connection = await _dataSource!.OpenConnectionAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            _configuration.Logger.ConnectionLogger.ConnectionOpened(ConnectionString);
+            LogMessages.ConnectionOpened(
+                _configuration!.Logger.ConnectionLogger,
+                ConnectionString);
 
             return connection;
         }
         catch (Exception e)
         {
-            _configuration!.Logger.ConnectionLogger.ConnectionError(e.Message, e);
+            LogMessages.ConnectionError(
+                _configuration!.Logger.ConnectionLogger,
+                e.Message,
+                e);
+
             throw new AgeException("Could not connect to to database.", e);
         }
     }
@@ -199,7 +272,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            _configuration!.Logger.ConnectionLogger.CreatingExtension(ConnectionString);
+            LogMessages.CreatingExtension(
+                _configuration!.Logger.CommandLogger,
+                ConnectionString);
 
             await using var command = new NpgsqlCommand(
                 "CREATE EXTENSION IF NOT EXISTS age;",
@@ -207,11 +282,14 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            _configuration!.Logger.ConnectionLogger.ExtensionCreated(ConnectionString);
+            LogMessages.ExtensionCreated(
+                _configuration!.Logger.CommandLogger,
+                ConnectionString);
         }
         catch (PostgresException e)
         {
-            _configuration!.Logger.ConnectionLogger.ExtensionNotCreatedError(
+            LogMessages.ExtensionNotCreatedError(
+                _configuration!.Logger.CommandLogger,
                 ConnectionString,
                 e.MessageText);
 
@@ -219,11 +297,57 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
         catch (Exception e)
         {
-            _configuration!.Logger.ConnectionLogger.ExtensionNotCreatedError(
+            LogMessages.ExtensionNotCreatedError(
+                _configuration!.Logger.CommandLogger,
                 ConnectionString,
                 e.Message);
 
             throw new AgeException("Could not create AGE extension in database.", e);
+        }
+    }
+
+    private async Task AddAgCatalogToSearchPath(
+        NpgsqlConnection connection,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+
+            await using var command = new NpgsqlCommand(
+                "SHOW search_path;",
+                connection);
+
+            var searchPath = (string?)await command.ExecuteScalarAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            LogMessages.RetrievedCurrentSearchPath(
+                _configuration!.Logger.CommandLogger,
+                searchPath);
+
+            var query = searchPath is not null
+                ? $"SET search_path = ag_catalog, {searchPath};"
+                : "SET search_path = ag_catalog;";
+
+            command.CommandText = query;
+
+            await command.ExecuteNonQueryAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            _agCatalogLoaded = true;
+            LogMessages.AgCatalogAddedToSearchPath(
+                _configuration!.Logger.CommandLogger);
+        }
+        catch (PostgresException e)
+        {
+            LogMessages.AgCatalogNotAddedToSearchPathError(
+                _configuration!.Logger.CommandLogger,
+                e.MessageText);
+        }
+        catch (Exception e)
+        {
+            LogMessages.AgCatalogNotAddedToSearchPathError(
+                _configuration!.Logger.CommandLogger,
+                e.Message);
         }
     }
 
@@ -233,7 +357,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            _configuration!.Logger.ConnectionLogger.LoadingExtension(ConnectionString);
+            LogMessages.LoadingExtension(
+                _configuration!.Logger.ConnectionLogger,
+                ConnectionString);
 
             await using var batch = new NpgsqlBatch(connection)
             {
@@ -247,11 +373,14 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
             await batch.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            _configuration!.Logger.ConnectionLogger.ExtensionLoaded(ConnectionString);
+            LogMessages.ExtensionLoaded(
+                _configuration!.Logger.ConnectionLogger,
+                ConnectionString);
         }
         catch (PostgresException e)
         {
-            _configuration!.Logger.ConnectionLogger.ExtensionNotLoadedError(
+            LogMessages.ExtensionNotLoadedError(
+                _configuration!.Logger.ConnectionLogger,
                 ConnectionString,
                 e.MessageText);
 
@@ -259,7 +388,8 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
         catch (Exception e)
         {
-            _configuration!.Logger.ConnectionLogger.ExtensionNotLoadedError(
+            LogMessages.ExtensionNotLoadedError(
+                _configuration!.Logger.ConnectionLogger,
                 ConnectionString,
                 e.Message);
 
