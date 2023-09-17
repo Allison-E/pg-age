@@ -21,13 +21,16 @@ public static class AgeClientEventId
     #endregion
 
     #region Commands
-    public const int GRAPH_CREATED              = 3001;
-    public const int GRAPH_DROPPED              = 3003;
+    public const int GRAPH_CREATED                  = 3001;
+    public const int GRAPH_DROPPED                  = 3003;
 
-    public const int CYPHER_QUERY_EXECUTED      = 3101;
+    public const int CYPHER_EXECUTED    = 3101;
+    public const int QUERY_EXECUTED     = 3102;
 
     public const int GRAPH_NOT_CREATED_ERROR    = 3900;
     public const int GRAPH_NOT_DROPPED_ERROR    = 3901;
+    public const int CYPHER_EXECUTION_ERROR     = 3902;
+    public const int QUERY_EXECUTION_ERROR      = 3903;
     #endregion
 
     #region Command

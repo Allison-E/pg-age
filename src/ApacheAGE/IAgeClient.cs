@@ -51,50 +51,50 @@ public interface IAgeClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Execute the given cypher query.
+    /// Execute the given cypher command in the database.
     /// </summary>
     /// <remarks>
-    /// Only cypher queries currently supported by Apache AGE will run
-    /// successfully; others will throw an error.
+    /// For queries which return values, use 
+    /// <see cref="ExecuteQueryAsync(string, CancellationToken)"/>.
     /// </remarks>
-    /// <param name="graphName">
+    /// <param name="graph">
     /// Graph name.
     /// </param>
-    /// <param name="cypherQuery">
-    /// Cypher quer.
+    /// <param name="cypher">
+    /// Cypher command.
     /// </param>
     /// <param name="cancellationToken">
     /// Token for propagating a notification to stop the running operation.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> for monitoring the progress of the operation.
+    /// </returns>
+    Task ExecuteCypherAsync(
+        string graph,
+        string cypher,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Execute the given query, which returns records, in the database.
+    /// </summary>
+    /// <remarks>
+    /// For queries which don't return any value, use 
+    /// <see cref="ExecuteCypherAsync(string, string, CancellationToken)"/>.
+    /// </remarks>
+    /// <param name="query">
+    /// Query.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token for propagating a notification to stop the running operation.
+    /// </param>
+    /// <param name="parameters">
+    /// Query parameters, if using a parameterised query.
     /// </param>
     /// <returns>
     /// The result as <see cref="AgType"/>.
     /// </returns>
-    Task<AgType> ExecuteCypherAsync(
-        string graphName,
-        string cypherQuery,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Execute the given cypher query.
-    /// </summary>
-    /// <remarks>
-    /// Only cypher queries currently supported by Apache AGE will run
-    /// successfully; others will throw an error.
-    /// </remarks>
-    /// <param name="graphName">
-    /// Graph name.
-    /// </param>
-    /// <param name="cypherQuery">
-    /// Cypher quer.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Token for propagating a notification to stop the running operation.
-    /// </param>
-    /// <returns>
-    /// The result converted to <see cref="AgType{T}"/>.
-    /// </returns>
-    Task<AgType<T>> ExecuteCypherAsync<T>(
-        string graphName,
-        string cypherQuery,
-        CancellationToken cancellationToken = default);
+    Task<AgType> ExecuteQueryAsync(
+        string query,
+        CancellationToken cancellationToken = default,
+        params object?[] parameters);
 }

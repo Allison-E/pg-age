@@ -10,10 +10,10 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     private NpgsqlDataSource? _dataSource;
     private AgeConfiguration? _configuration;
 
-    private bool _agCatalogLoaded = false;
     private bool _isDisposed = false;
 
     public string ConnectionString => _dataSource!.ConnectionString;
+    public bool AgCatalogLoaded { get; private set; } = false;
 
     internal AgeClient(string connectionString, AgeConfiguration configuration)
     {
@@ -130,9 +130,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
     }
 
-    public async Task<AgType> ExecuteCypherAsync(
-        string graphName,
-        string cypherQuery,
+    public async Task ExecuteCypherAsync(
+        string graph,
+        string cypher,
         CancellationToken cancellationToken = default)
     {
         try
@@ -141,46 +141,84 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
             await LoadExtensionAsync(connection, cancellationToken);
 
             await using var command = new NpgsqlCommand(
-                "SELECT * FROM cypher($1, $2);",
-                connection)
+                $"SELECT * FROM cypher('{graph}', $$ {cypher} $$) as (result agtype);",
+                connection);
+
+            var result = await command.ExecuteNonQueryAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            LogMessages.CypherExecuted(
+                _configuration!.Logger.CommandLogger,
+                graph,
+                cypher);
+        }
+        catch (PostgresException e)
+        {
+            LogMessages.CypherExecutionError(
+                _configuration!.Logger.CommandLogger,
+                graph,
+                e.MessageText,
+                e);
+
+            throw new AgeException($"Could not execute Cypher command.", e);
+        }
+        catch (Exception e)
+        {
+            LogMessages.CypherExecutionError(
+                _configuration!.Logger.CommandLogger,
+                graph,
+                e.Message,
+                e);
+
+            throw new AgeException($"Could not execute Cypher command.", e);
+        }
+    }
+
+    public async Task<AgType> ExecuteQueryAsync(
+        string query,
+        CancellationToken cancellationToken = default,
+        params object?[] parameters)
+    {
+        try
+        {
+            await using var connection = await OpenConnectionAsync(cancellationToken);
+            await LoadExtensionAsync(connection, cancellationToken);
+
+            await using var command = new NpgsqlCommand(query, connection)
             {
-                Parameters =
-                {
-                    new() { Value = graphName },
-                    new() { Value = cypherQuery },
-                }
+                Parameters = { BuildParameters(parameters), },
             };
 
-            //_configuration!.Logger.CommandLogger.DroppingGraph(graphName, cascade);
-            //await command.ExecuteNonQueryAsync(cancellationToken)
-            //    .ConfigureAwait(false);
-            //_configuration!.Logger.CommandLogger.GraphDropped(graphName, cascade);
+            var reader = await command.ExecuteReaderAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            LogMessages.QueryExecuted(
+                _configuration!.Logger.CommandLogger,
+                query);
 
             throw new NotImplementedException();
         }
         catch (PostgresException e)
         {
-            LogMessages.GraphNotDroppedError(
+            LogMessages.QueryExecutionError(
                 _configuration!.Logger.CommandLogger,
-                graphName,
+                query,
                 e.MessageText,
                 e);
 
-            throw new AgeException($"Could not create graph '{graphName}'.", e);
+            throw new AgeException($"Could not execute query.", e);
         }
         catch (Exception e)
         {
             LogMessages.GraphNotDroppedError(
                 _configuration!.Logger.CommandLogger,
-                graphName,
+                query,
                 e.Message,
                 e);
 
-            throw new AgeException($"Could not create graph '{graphName}'.", e);
+            throw new AgeException($"Could not execute query.", e);
         }
     }
-
-    public Task<AgType<T>> ExecuteCypherAsync<T>(string graphName, string cypherQuery, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     #region Dispose
     public void Dispose()
@@ -314,7 +352,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            _agCatalogLoaded = true;
+            AgCatalogLoaded = true;
             LogMessages.AgCatalogAddedToSearchPath(
                 _configuration!.Logger.CommandLogger);
         }
@@ -372,5 +410,28 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
             throw new AgeException("Could not create AGE extension in database.", e);
         }
+    }
+
+    private static List<NpgsqlParameter> BuildParameters(object?[] parameters)
+    {
+        var result = new List<NpgsqlParameter>();
+
+        if (parameters == null || parameters.Length == 0)
+            return result;
+
+        foreach (var parameter in parameters)
+        {
+            result.Add(new NpgsqlParameter { Value = parameter });
+        }
+
+        return result;
+    }
+
+    private string BuildQueryForCypherExecution()
+    {
+        if (AgCatalogLoaded)
+            return "SELECT * FROM cypher($1, $$ $2 $$);";
+        else
+            return "SELECT * FROM ag_catalog.cypher($1, $$ $2 $$);";
     }
 }

@@ -120,10 +120,19 @@ public static partial class LogMessages
         bool cascade);
 
     [LoggerMessage(
-        EventId = AgeClientEventId.CYPHER_QUERY_EXECUTED,
+        EventId = AgeClientEventId.CYPHER_EXECUTED,
         Level = LogLevel.Information,
-        Message = "Executed query\n{query}")]
-    public static partial void CypherQueryExecuted(
+        Message = "Executed Cypher\nGraph: {graph}\nCypher: {cypher}")]
+    public static partial void CypherExecuted(
+        ILogger logger,
+        string graph,
+        string cypher);
+    
+    [LoggerMessage(
+        EventId = AgeClientEventId.QUERY_EXECUTED,
+        Level = LogLevel.Information,
+        Message = "Executed query\nQuery: {query}")]
+    public static partial void QueryExecuted(
         ILogger logger,
         string query);
 
@@ -138,6 +147,26 @@ public static partial class LogMessages
     string graphName,
     string reason,
     Exception exception);
+
+    [LoggerMessage(
+        EventId = AgeClientEventId.CYPHER_EXECUTION_ERROR,
+        Level = LogLevel.Error,
+        Message = "Cypher did not execute properly. Reason: {reason}\nQuery: {cypherQuery}")]
+    public static partial void CypherExecutionError(
+        ILogger logger,
+        string reason,
+        string cypherQuery,
+        Exception exception);
+    
+    [LoggerMessage(
+        EventId = AgeClientEventId.QUERY_EXECUTION_ERROR,
+        Level = LogLevel.Error,
+        Message = "Query did not execute properly. Reason: {reason}\nQuery: {query}")]
+    public static partial void QueryExecutionError(
+        ILogger logger,
+        string query,
+        string reason,
+        Exception exception);
 
     #endregion
     #endregion
