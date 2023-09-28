@@ -3,49 +3,18 @@
 /// <summary>
 /// Represents the data type returned by AGE.
 /// </summary>
-/// <remarks>
-/// Given the type parameter <typeparamref name="T"/>, an implicit conversion
-/// will be tried from <see cref="object"/> to <typeparamref name="T"/> for
-/// <see cref="AgType{T}.Value"/>.
-/// </remarks>
-/// <typeparam name="T">
-/// </typeparam>
-public class AgType<T>
+public class AgType
 {
     /// <summary>
     /// Data value.
     /// </summary>
-    public T Value { get; }
+    public object? Value { get; }
 
-    /// <summary>
-    /// Creates a new instance of <see cref="AgType{}"/>.
-    /// </summary>
-    /// <param name="value">
-    /// Value to store in the instance.
-    /// </param>
-    /// <remarks>
-    /// An implicit conversion will be tried to convert the input value
-    /// to type <typeparamref name="T"/> before storing it.
-    /// </remarks>
-    public AgType(object value)
-    {
-        // TODO: Create a utility class to handle conversions better.
-        Value = (T)value;
-    }
-}
-
-/// <summary>
-/// Represents the data type returned by AGE.
-/// </summary>
-public class AgType: AgType<object>
-{
     /// <summary>
     /// Creates a new instance of <see cref="AgType"/>.
     /// </summary>
     /// <param name="value">
     /// Value to store in the instance.
     /// </param>
-    public AgType(object value) : base(value)
-    {
-    }
+    public AgType(object? value) => Value = value;
 }

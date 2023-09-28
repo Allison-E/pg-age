@@ -6,8 +6,18 @@
 public interface IAgeClient
 {
     /// <summary>
-    /// Perform the necessary actions to create and load the AGE extension
-    /// in the database.
+    /// Connection string to the database.
+    /// </summary>
+    string ConnectionString { get; }
+
+    /// <summary>
+    /// Indicates if there's an open connection to the database.
+    /// </summary>
+    bool IsConnected { get; }
+
+    /// <summary>
+    /// Opens connection to the database and performs the necessary actions to create 
+    /// and load the AGE extension in the database.
     /// </summary>
     /// <param name="cancellationToken">
     /// Token for propagating a notification  stop the running operation.
@@ -15,7 +25,7 @@ public interface IAgeClient
     /// <returns>
     /// A <see cref="Task"/> for monitoring the progress of the operation.
     /// </returns>
-    Task ConnectAsync(CancellationToken cancellationToken = default);
+    Task OpenConnectionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a graph.
@@ -93,8 +103,19 @@ public interface IAgeClient
     /// <returns>
     /// The result as <see cref="AgType"/>.
     /// </returns>
-    Task<AgType> ExecuteQueryAsync(
+    Task<AgeDataReader> ExecuteQueryAsync(
         string query,
         CancellationToken cancellationToken = default,
         params object?[] parameters);
+
+    /// <summary>
+    /// Close connection to the database.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Token for propagating a notification  stop the running operation.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> for monitoring the progress of the operation.
+    /// </returns>
+    Task CloseConnectionAsync(CancellationToken cancellationToken = default);
 }

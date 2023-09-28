@@ -9,11 +9,11 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 {
     private NpgsqlDataSource? _dataSource;
     private AgeConfiguration? _configuration;
-
+    private NpgsqlConnection? _connection;
     private bool _isDisposed = false;
 
     public string ConnectionString => _dataSource!.ConnectionString;
-    public bool AgCatalogLoaded { get; private set; } = false;
+    public bool IsConnected => _connection?.FullState == System.Data.ConnectionState.Open;
 
     internal AgeClient(string connectionString, AgeConfiguration configuration)
     {
@@ -24,12 +24,27 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
     ~AgeClient() => Dispose(false);
 
-    public async Task ConnectAsync(CancellationToken cancellationToken = default)
+    #region Connection
+
+    public async Task OpenConnectionAsync(CancellationToken cancellationToken = default)
     {
-        await using var connection = await OpenConnectionAsync(cancellationToken);
-        await CreateExtensionAsync(connection, cancellationToken);
-        await AddAgCatalogToSearchPath(connection, cancellationToken);
+        _connection = await OpenConnectionInternalAsync(cancellationToken);
+        await CreateExtensionAsync(_connection, cancellationToken);
+        await AddAgCatalogToSearchPath(_connection, cancellationToken);
+        await LoadExtensionAsync(_connection, cancellationToken);
     }
+
+    public Task CloseConnectionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_connection is null)
+            throw new NullReferenceException("Connection is not initialised.");
+
+        return _connection.CloseAsync();
+    }
+
+    #endregion
+
+    #region Commands
 
     public async Task CreateGraphAsync(
         string graphName,
@@ -37,12 +52,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            await using var connection = await OpenConnectionAsync(cancellationToken);
-            await LoadExtensionAsync(connection, cancellationToken);
-
             await using var command = new NpgsqlCommand(
                 "SELECT * FROM create_graph($1);",
-                connection)
+                _connection)
             {
                 Parameters =
                 {
@@ -86,12 +98,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            await using var connection = await OpenConnectionAsync(cancellationToken);
-            await LoadExtensionAsync(connection, cancellationToken);
-
             await using var command = new NpgsqlCommand(
                 "SELECT * FROM drop_graph($1, $2);",
-                connection)
+                _connection)
             {
                 Parameters =
                 {
@@ -137,12 +146,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            await using var connection = await OpenConnectionAsync(cancellationToken);
-            await LoadExtensionAsync(connection, cancellationToken);
-
             await using var command = new NpgsqlCommand(
                 $"SELECT * FROM cypher('{graph}', $$ {cypher} $$) as (result agtype);",
-                connection);
+                _connection);
 
             var result = await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -174,20 +180,22 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
     }
 
-    public async Task<AgType> ExecuteQueryAsync(
+    public async Task<AgeDataReader> ExecuteQueryAsync(
         string query,
         CancellationToken cancellationToken = default,
         params object?[] parameters)
     {
         try
         {
-            await using var connection = await OpenConnectionAsync(cancellationToken);
-            await LoadExtensionAsync(connection, cancellationToken);
-
-            await using var command = new NpgsqlCommand(query, connection)
+            await using var command = new NpgsqlCommand(query, _connection) 
             {
-                Parameters = { BuildParameters(parameters), },
+                AllResultTypesAreUnknown = true 
             };
+            var @params = BuildParameters(parameters);
+            foreach (var param in @params)
+            {
+                command.Parameters.Add(param);
+            }
 
             var reader = await command.ExecuteReaderAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -196,7 +204,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 _configuration!.Logger.CommandLogger,
                 query);
 
-            throw new NotImplementedException();
+            return new(reader);
         }
         catch (PostgresException e)
         {
@@ -220,6 +228,8 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
     }
 
+    #endregion
+
     #region Dispose
     public void Dispose()
     {
@@ -242,6 +252,12 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 _configuration = null;
             }
 
+            if (_connection is not null)
+            {
+                _connection.Dispose();
+                _connection = null;
+            }
+
             _dataSource!.Dispose();
             _dataSource = null;
             _isDisposed = true;
@@ -257,26 +273,35 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
                 _configuration = null;
             }
 
+            if (_connection is not null)
+            {
+                await _connection.DisposeAsync();
+                _connection = null;
+            }
+
             await _dataSource!.DisposeAsync();
             _dataSource = null;
+
             _isDisposed = true;
         }
     }
     #endregion
 
-    private async Task<NpgsqlConnection> OpenConnectionAsync(
+    #region Internals
+
+    private async Task<NpgsqlConnection> OpenConnectionInternalAsync(
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var connection = await _dataSource!.OpenConnectionAsync(cancellationToken)
+            var _connection = await _dataSource!.OpenConnectionAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             LogMessages.ConnectionOpened(
                 _configuration!.Logger.ConnectionLogger,
                 ConnectionString);
 
-            return connection;
+            return _connection;
         }
         catch (Exception e)
         {
@@ -290,14 +315,14 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     }
 
     private async Task CreateExtensionAsync(
-        NpgsqlConnection connection,
+        NpgsqlConnection _connection,
         CancellationToken cancellationToken = default)
     {
         try
         {
             await using var command = new NpgsqlCommand(
                 "CREATE EXTENSION IF NOT EXISTS age;",
-                connection);
+                _connection);
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -326,7 +351,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     }
 
     private async Task AddAgCatalogToSearchPath(
-        NpgsqlConnection connection,
+        NpgsqlConnection _connection,
         CancellationToken cancellationToken = default)
     {
         try
@@ -334,7 +359,7 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
 
             await using var command = new NpgsqlCommand(
                 "SHOW search_path;",
-                connection);
+                _connection);
 
             var searchPath = (string?)await command.ExecuteScalarAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -352,7 +377,6 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            AgCatalogLoaded = true;
             LogMessages.AgCatalogAddedToSearchPath(
                 _configuration!.Logger.CommandLogger);
         }
@@ -371,12 +395,12 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     }
 
     private async Task LoadExtensionAsync(
-        NpgsqlConnection connection,
+        NpgsqlConnection _connection,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var batch = new NpgsqlBatch(connection)
+            await using var batch = new NpgsqlBatch(_connection)
             {
                 BatchCommands =
                 {
@@ -427,11 +451,5 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         return result;
     }
 
-    private string BuildQueryForCypherExecution()
-    {
-        if (AgCatalogLoaded)
-            return "SELECT * FROM cypher($1, $$ $2 $$);";
-        else
-            return "SELECT * FROM ag_catalog.cypher($1, $$ $2 $$);";
-    }
+    #endregion
 }

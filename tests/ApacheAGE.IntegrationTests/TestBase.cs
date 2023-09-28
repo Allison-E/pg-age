@@ -8,18 +8,35 @@ internal class TestBase
     private static string _defaultConnectionString =
         "Server=localhost;Port=5432;Username=agedotnet;Password=agedotnet;Database=agedotnet_tests;";
 
-    protected string ConnectionString => 
+    protected string ConnectionString =>
         Environment.GetEnvironmentVariable("AGE_TEST_DB") ?? _defaultConnectionString;
 
     protected AgeClientBuilder CreateAgeClientBuilder() => new(ConnectionString);
 
     protected AgeClient CreateAgeClient() => CreateAgeClientBuilder().Build();
 
-    protected NpgsqlConnection GetConnection() => 
+    protected NpgsqlConnection GetConnection() =>
         new NpgsqlDataSourceBuilder(ConnectionString)
              .Build()
              .OpenConnection();
 
-    protected NpgsqlCommand CreateCommand(string command) => 
-        new NpgsqlCommand(command, GetConnection());
+    protected NpgsqlCommand CreateCommand(string command) =>
+        new(command, GetConnection());
+
+    protected async Task<string> CreateTempGraphAsync()
+    {
+        var graphName = "temp_graph" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        await using var client = CreateAgeClient();
+        await client.OpenConnectionAsync();
+        await client.CreateGraphAsync(graphName);
+
+        return graphName;
+    }
+
+    protected async Task DropTempGraphAsync(string graphName)
+    {
+        await using var client = CreateAgeClient();
+        await client.OpenConnectionAsync();
+        await client.DropGraphAsync(graphName, true);
+    }
 }
