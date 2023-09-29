@@ -7,7 +7,7 @@ namespace ApacheAGE;
 /// </summary>
 public class AgeDataReader: IAgeDataReader, IDisposable, IAsyncDisposable
 {
-    private NpgsqlDataReader _reader;
+    private readonly NpgsqlDataReader _reader;
     private bool _isDisposed = false;
 
     public int FieldCount => _reader.FieldCount;
@@ -62,6 +62,7 @@ public class AgeDataReader: IAgeDataReader, IDisposable, IAsyncDisposable
             _reader.Dispose();
             GC.SuppressFinalize(this); 
         }
+        _isDisposed = true;
     }
 
     public async ValueTask DisposeAsync()
@@ -71,6 +72,7 @@ public class AgeDataReader: IAgeDataReader, IDisposable, IAsyncDisposable
             await _reader.DisposeAsync();
             GC.SuppressFinalize(this); 
         }
+        _isDisposed = true;
     }
 
     #endregion
