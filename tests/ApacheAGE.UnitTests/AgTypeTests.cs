@@ -236,8 +236,6 @@ public class AgTypeTests
         });
     }
 
-    // TODO: Test having Infinite, -Infinite and NaN values in a list.
-
     [Test]
     public void GetList_Should_ReturnNegativeInfinity_When_Supplied_NegativeInfinity()
     {
