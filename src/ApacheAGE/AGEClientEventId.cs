@@ -3,9 +3,13 @@
 public static class AgeClientEventId
 {
     #region Connection
-    public const int CONNECTION_OPENED           = 1000;
+    public const int CONNECTION_OPENED      = 1000;
+    public const int CONNECTION_CLOSED      = 1001;
 
-    public const int CONNECTION_ERROR            = 1900;
+    public const int NULL_CONNECTION_WARNING = 1800;
+
+    public const int OPEN_CONNECTION_ERROR  = 1900;
+    public const int CLOSE_CONNECTION_ERROR = 1901;
     #endregion
 
 

@@ -34,12 +34,29 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         await LoadExtensionAsync(_connection, cancellationToken);
     }
 
-    public Task CloseConnectionAsync(CancellationToken cancellationToken = default)
+    public async Task CloseConnectionAsync(CancellationToken cancellationToken = default)
     {
-        if (_connection is null)
-            throw new NullReferenceException("Connection is not initialised.");
+        CheckForExistingConnection("There is no existing open connection.");
 
-        return _connection.CloseAsync();
+        try
+        {
+            await _connection!.CloseAsync();
+            await _connection!.DisposeAsync();
+            _connection = null;
+
+            LogMessages.ConnectionClosed(
+                _configuration!.Logger.ConnectionLogger,
+                ConnectionString);
+        }
+        catch (Exception e)
+        {
+            LogMessages.CloseConnectionError(
+                _configuration!.Logger.ConnectionLogger,
+                e.Message,
+                e);
+
+            throw new AgeException("Could not close the existing connection to the database.", e);
+        }
     }
 
     #endregion
@@ -187,9 +204,9 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
     {
         try
         {
-            await using var command = new NpgsqlCommand(query, _connection) 
+            await using var command = new NpgsqlCommand(query, _connection)
             {
-                AllResultTypesAreUnknown = true 
+                AllResultTypesAreUnknown = true
             };
             var @params = BuildParameters(parameters);
             foreach (var param in @params)
@@ -305,12 +322,12 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
         catch (Exception e)
         {
-            LogMessages.ConnectionError(
+            LogMessages.OpenConnectionError(
                 _configuration!.Logger.ConnectionLogger,
                 e.Message,
                 e);
 
-            throw new AgeException("Could not connect to to database.", e);
+            throw new AgeException("Could not connect to the database.", e);
         }
     }
 
@@ -449,6 +466,22 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         }
 
         return result;
+    }
+
+    #endregion
+
+    #region Checks
+
+    private void CheckForExistingConnection(string? message = null)
+    {
+        if (_connection is not null)
+            return;
+
+        LogMessages.NoExistingConnectionWarning(
+            _configuration!.Logger.ConnectionLogger,
+            "An attempt to perform certain action was made when there is no existing connection to the database");
+        message ??= "There is no existing connection to the database. Call OpenConnectionAsync() to open a connection.";
+        throw new AgeException(message);
     }
 
     #endregion

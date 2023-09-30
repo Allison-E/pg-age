@@ -5,6 +5,7 @@ namespace ApacheAGE;
 public static partial class LogMessages
 {
     #region Connection
+
     [LoggerMessage(
     EventId = AgeClientEventId.CONNECTION_OPENED,
     Level = LogLevel.Debug,
@@ -12,16 +13,43 @@ public static partial class LogMessages
     public static partial void ConnectionOpened(
         ILogger logger,
         string connectionString);
+    
+    [LoggerMessage(
+    EventId = AgeClientEventId.CONNECTION_CLOSED,
+    Level = LogLevel.Debug,
+    Message = "Connection to {connectionString} closed")]
+    public static partial void ConnectionClosed(
+        ILogger logger,
+        string connectionString);
 
     [LoggerMessage(
-    EventId = AgeClientEventId.CONNECTION_ERROR,
+    EventId = AgeClientEventId.NULL_CONNECTION_WARNING,
+    Level = LogLevel.Warning,
+    Message = "{message}")]
+    public static partial void NoExistingConnectionWarning(
+        ILogger logger,
+        string message);
+    
+    [LoggerMessage(
+    EventId = AgeClientEventId.OPEN_CONNECTION_ERROR,
     Level = LogLevel.Error,
     Message = "{message}",
     SkipEnabledCheck = true)]
-    public static partial void ConnectionError(
+    public static partial void OpenConnectionError(
         ILogger logger,
         string message,
         Exception exception);
+
+    [LoggerMessage(
+    EventId = AgeClientEventId.CLOSE_CONNECTION_ERROR,
+    Level = LogLevel.Error,
+    Message = "{message}",
+    SkipEnabledCheck = true)]
+    public static partial void CloseConnectionError(
+        ILogger logger,
+        string message,
+        Exception exception);
+
     #endregion
 
     #region Internals
