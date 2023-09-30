@@ -1,4 +1,6 @@
-﻿namespace ApacheAGE.Data;
+﻿using System.Text.Json.Serialization;
+
+namespace ApacheAGE.Data;
 
 /// <summary>
 /// AGE edge.
@@ -10,11 +12,13 @@ public class Edge
     /// </summary>
     public int Id { get; set; }
 
+    [JsonPropertyName("start_id")]
     /// <summary>
     /// GraphId for the source vertex.
     /// </summary>
     public int StartId { get; set; }
 
+    [JsonPropertyName("end_id")]
     /// <summary>
     /// GraphId for the target vertex.
     /// </summary>
