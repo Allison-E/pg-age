@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using System.Data;
+using Npgsql;
 
 namespace ApacheAGE;
 
@@ -44,6 +45,9 @@ public class AgeDataReader: IAgeDataReader, IDisposable, IAsyncDisposable
     {
         var value = _reader.GetValue(ordinal);
 
+        if (value is DBNull)
+            value = null;
+
         return new(value);
     }
 
@@ -60,7 +64,7 @@ public class AgeDataReader: IAgeDataReader, IDisposable, IAsyncDisposable
         if (!_isDisposed)
         {
             _reader.Dispose();
-            GC.SuppressFinalize(this); 
+            GC.SuppressFinalize(this);
         }
         _isDisposed = true;
     }
@@ -70,7 +74,7 @@ public class AgeDataReader: IAgeDataReader, IDisposable, IAsyncDisposable
         if (!_isDisposed)
         {
             await _reader.DisposeAsync();
-            GC.SuppressFinalize(this); 
+            GC.SuppressFinalize(this);
         }
         _isDisposed = true;
     }
