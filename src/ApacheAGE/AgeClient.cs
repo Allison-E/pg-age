@@ -67,18 +67,20 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         string graphName,
         CancellationToken cancellationToken = default)
     {
-        try
+        CheckForExistingConnection();
+
+        await using var command = new NpgsqlCommand(
+            "SELECT * FROM create_graph($1);",
+            _connection)
         {
-            await using var command = new NpgsqlCommand(
-                "SELECT * FROM create_graph($1);",
-                _connection)
-            {
-                Parameters =
+            Parameters =
                 {
                     new() { Value = graphName },
                 }
-            };
+        };
 
+        try
+        {
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -113,19 +115,21 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        try
+        CheckForExistingConnection();
+
+        await using var command = new NpgsqlCommand(
+            "SELECT * FROM drop_graph($1, $2);",
+            _connection)
         {
-            await using var command = new NpgsqlCommand(
-                "SELECT * FROM drop_graph($1, $2);",
-                _connection)
-            {
-                Parameters =
+            Parameters =
                 {
                     new() { Value = graphName },
                     new() { Value = cascade },
                 }
-            };
+        };
 
+        try
+        {
             await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -161,12 +165,14 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         string cypher,
         CancellationToken cancellationToken = default)
     {
+        CheckForExistingConnection();
+
+        await using var command = new NpgsqlCommand(
+            $"SELECT * FROM cypher('{graph}', $$ {cypher} $$) as (result agtype);",
+            _connection);
+
         try
         {
-            await using var command = new NpgsqlCommand(
-                $"SELECT * FROM cypher('{graph}', $$ {cypher} $$) as (result agtype);",
-                _connection);
-
             var result = await command.ExecuteNonQueryAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -202,18 +208,20 @@ public class AgeClient: IAgeClient, IDisposable, IAsyncDisposable
         CancellationToken cancellationToken = default,
         params object?[] parameters)
     {
+        CheckForExistingConnection();
+
+        await using var command = new NpgsqlCommand(query, _connection)
+        {
+            AllResultTypesAreUnknown = true
+        };
+        var @params = BuildParameters(parameters);
+        foreach (var param in @params)
+        {
+            command.Parameters.Add(param);
+        }
+
         try
         {
-            await using var command = new NpgsqlCommand(query, _connection)
-            {
-                AllResultTypesAreUnknown = true
-            };
-            var @params = BuildParameters(parameters);
-            foreach (var param in @params)
-            {
-                command.Parameters.Add(param);
-            }
-
             var reader = await command.ExecuteReaderAsync(cancellationToken)
                 .ConfigureAwait(false);
 
