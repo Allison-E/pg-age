@@ -3,15 +3,34 @@
   <PropertyGroup>
 
     <Authors>Emmanuel Allison</Authors>
-    <Description>pg-age is a .NET client for use with the AGE extension for PostgreSQL.</Description>
-    <PackageTags>postgres;postgresql;apache-age</PackageTags>
+    <Description>ApacheAGE is a .NET client for use with the AGE extension for PostgreSQL.</Description>
+    <PackageTags>postgres;postgresql;apache-age;graph</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>0.5.0</Version>
+    <Version>0.5.1</Version>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Title>ApacheAGE</Title>
+    <Company />
+    <PackageId>ApacheAGE</PackageId>
+    <RepositoryUrl>https://github.com/Allison-E/pg-age</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <IncludeSymbols>False</IncludeSymbols>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
       
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="7.0.4" />

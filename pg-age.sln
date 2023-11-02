@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApacheAGE", "src\ApacheAGE\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{547E0972-FE1B-49D0-B63D-2E1D394CCECA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApacheAGE.UnitTests", "tests\ApacheAGE.UnitTests\ApacheAGE.UnitTests.csproj", "{049D15E7-580B-4307-95DF-992089CBACA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApacheAGE.UnitTests", "tests\ApacheAGE.UnitTests\ApacheAGE.UnitTests.csproj", "{049D15E7-580B-4307-95DF-992089CBACA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApacheAGE.IntegrationTests", "tests\ApacheAGE.IntegrationTests\ApacheAGE.IntegrationTests.csproj", "{9F25343E-37A3-43E6-BD7D-AE08F9809FD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApacheAGE.IntegrationTests", "tests\ApacheAGE.IntegrationTests\ApacheAGE.IntegrationTests.csproj", "{9F25343E-37A3-43E6-BD7D-AE08F9809FD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
