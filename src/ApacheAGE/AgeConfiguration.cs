@@ -1,7 +1,9 @@
-﻿namespace ApacheAGE;
-internal class AgeConfiguration
+﻿namespace ApacheAGE
 {
-    public AgeLoggerConfiguration Logger { get; set; }
+    internal class AgeConfiguration
+    {
+        public AgeLoggerConfiguration Logger { get; set; }
 
-    public AgeConfiguration(AgeLoggerConfiguration logger) => Logger = logger;
+        public AgeConfiguration(AgeLoggerConfiguration logger) => Logger = logger;
+    }
 }
