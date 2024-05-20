@@ -27,33 +27,22 @@ jobs:
       run: |
         echo "AGE_COMMIT_HASH=$(git ls-remote https://github.com/apache/age.git refs/heads/release/PG16/1.5.0 | awk '{print $1}')" >> $GITHUB_ENV
 
-    - name: Install PostgreSQL 16
+    - name: Install PostgreSQL 16 and AGE, create default user and databases
       if: steps.pg16cache.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch REL_16_STABLE git://git.postgresql.org/git/postgresql.git ~/pg16source
         cd ~/pg16source
         ./configure --prefix=$HOME/pg16 CFLAGS="-std=gnu99 -ggdb -O0" --enable-cassert
         make install -j$(nproc) > /dev/null
-        cd ~/pg16
-        mkdir data
-        bin/initdb -D data
-    
-    - name: Install Apache AGE
-      run: |
         git clone --depth 1 --branch release/PG16/1.5.0 https://github.com/apache/age.git ~/age16source
         cd ~/age16source
         make PG_CONFIG=$HOME/pg16/bin/pg_config install
-
-    - name: Start PostreSQL server and create postgres user
-      run: |
         cd ~/pg16
+        mkdir data
+        bin/initdb -D data
         bin/pg_ctl -D data -l logfile start
         bin/createuser -s postgres
-
-    - name: Create test user and database
-      run: |
-        cd ~/pg16
-        bin/psql postgres -d 'postgres' -c 'CREATE DATABASE IF NOT EXISTS agedotnet_tests; CREATE USER agedotnet WITH ENCRYPTED PASSWORD 'agedotnet'; GRANT ALL PRIVILEGES ON DATABASE agedotnet_tests TO agedotnet;'
+        bin/psql postgres -d 'postgres' -c 'CREATE DATABASE agedotnet_tests; CREATE USER agedotnet WITH ENCRYPTED PASSWORD 'agedotnet'; GRANT ALL PRIVILEGES ON DATABASE agedotnet_tests TO agedotnet;'
         
     - uses: actions/checkout@v4
     
