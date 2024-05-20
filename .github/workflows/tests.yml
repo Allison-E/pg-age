@@ -48,6 +48,13 @@ jobs:
       run: |
         cd ~/pg16
         bin/pg_ctl -D data -l logfile start
+
+    - name: Create test user and database
+      run: |
+        bin/psql postgres
+        CREATE DATABASE IF NOT EXISTS agedotnet_tests;
+        CREATE USER agedotnet WITH ENCRYPTED PASSWORD 'agedotnet';
+        GRANT ALL PRIVILEGES ON DATABASE agedotnet_tests TO agedotnet;
         
     - uses: actions/checkout@v4
     
