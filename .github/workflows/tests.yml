@@ -42,7 +42,7 @@ jobs:
         bin/initdb -D data
         bin/pg_ctl -D data -l logfile start
         bin/createuser -s postgres
-        bin/psql postgres -d 'postgres' -c 'CREATE DATABASE agedotnet_tests; CREATE USER agedotnet WITH ENCRYPTED PASSWORD 'agedotnet'; GRANT ALL PRIVILEGES ON DATABASE agedotnet_tests TO agedotnet;'
+        bin/psql postgres -d 'postgres' -c 'CREATE DATABASE agedotnet_tests; CREATE USER agedotnet WITH ENCRYPTED PASSWORD \'agedotnet\'; GRANT ALL PRIVILEGES ON DATABASE agedotnet_tests TO agedotnet;'
         
     - uses: actions/checkout@v4
     
