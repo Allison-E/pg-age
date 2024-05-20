@@ -51,6 +51,7 @@ jobs:
 
     - name: Create test user and database
       run: |
+        cd ~pg16
         bin/psql postgres
         CREATE DATABASE IF NOT EXISTS agedotnet_tests;
         CREATE USER agedotnet WITH ENCRYPTED PASSWORD 'agedotnet';
