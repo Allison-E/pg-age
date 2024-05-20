@@ -6,7 +6,7 @@ namespace ApacheAGE.IntegrationTests;
 internal class TestBase
 {
     private static string _defaultConnectionString =
-        "Server=localhost;Port=5432;Username=agedotnet;Password=agedotnet;Database=agedotnet_tests;";
+        "Server=localhost;Port=5432;Database=agedotnet_tests;";
 
     protected string ConnectionString =>
         Environment.GetEnvironmentVariable("AGE_TEST_DB") ?? _defaultConnectionString;
