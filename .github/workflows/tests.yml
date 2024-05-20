@@ -34,12 +34,20 @@ jobs:
         cd ~/pg16source
         ./configure --prefix=$HOME/pg16 CFLAGS="-std=gnu99 -ggdb -O0" --enable-cassert
         make install -j$(nproc) > /dev/null
+        cd ~/pg16
+        mkdir data
+        bin/initdb -D data
     
     - name: Install Apache AGE
       run: |
         git clone --depth 1 --branch release/PG16/1.5.0 https://github.com/apache/age.git ~/age16source
         cd ~/age16source
         make PG_CONFIG=$HOME/pg16/bin/pg_config install
+
+    - name: Start PostreSQL server
+      run: |
+        cd ~/pg16
+        bin/pg_ctl -D data -l logfile start
         
     - uses: actions/checkout@v4
     
