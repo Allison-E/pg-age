@@ -37,7 +37,6 @@ jobs:
         cd ~/pg16
         mkdir data
         bin/initdb -D data
-        bin/createuser -s postgres
     
     - name: Install Apache AGE
       run: |
@@ -45,10 +44,11 @@ jobs:
         cd ~/age16source
         make PG_CONFIG=$HOME/pg16/bin/pg_config install
 
-    - name: Start PostreSQL server
+    - name: Start PostreSQL server and create postgres user
       run: |
         cd ~/pg16
         bin/pg_ctl -D data -l logfile start
+        bin/createuser -s postgres
 
     - name: Create test user and database
       run: |
