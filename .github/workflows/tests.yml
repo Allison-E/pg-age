@@ -37,6 +37,7 @@ jobs:
         cd ~/pg16
         mkdir data
         bin/initdb -D data
+        bin/createuser -s postgres
     
     - name: Install Apache AGE
       run: |
