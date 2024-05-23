@@ -1,4 +1,4 @@
-﻿using ApacheAGE.Data;
+﻿using ApacheAGE.Types;
 
 namespace ApacheAGE.UnitTests;
 public class AgTypeTests
@@ -8,9 +8,9 @@ public class AgTypeTests
     [Test]
     public void GetBoolean_Should_ReturnTrue_For_EquivalentTrueValues()
     {
-        var agtype = new AgType("true");
-        var agtype2 = new AgType("True");
-        var agtype3 = new AgType("TRUE");
+        var agtype = new Agtype("true");
+        var agtype2 = new Agtype("True");
+        var agtype3 = new Agtype("TRUE");
 
         Assert.Multiple(() =>
         {
@@ -23,9 +23,9 @@ public class AgTypeTests
     [Test]
     public void GetBoolean_Should_ReturnFalse_For_EquivalentFalseValues()
     {
-        var agtype = new AgType("false");
-        var agtype2 = new AgType("False");
-        var agtype3 = new AgType("FALSE");
+        var agtype = new Agtype("false");
+        var agtype2 = new Agtype("False");
+        var agtype3 = new Agtype("FALSE");
 
         Assert.Multiple(() =>
         {
@@ -36,17 +36,9 @@ public class AgTypeTests
     }
 
     [Test]
-    public void GetBoolean_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetBoolean(), Throws.InstanceOf<NullReferenceException>());
-    }
-
-    [Test]
     public void GetBoolean_Should_ThrowException_When_AgtypeValueIsInTheWrongFormat()
     {
-        var agtype = new AgType("23");
+        var agtype = new Agtype("23");
 
         Assert.That(() => agtype.GetBoolean(), Throws.InstanceOf<FormatException>());
     }
@@ -59,7 +51,7 @@ public class AgTypeTests
     public void GetDouble_Should_ReturnEquivalentDouble()
     {
         var numString = "1.0023e3";
-        var agtype = new AgType(numString);
+        var agtype = new Agtype(numString);
         var doubleEquivalent = double.Parse(numString);
 
         Assert.That(agtype.GetDouble(), Is.EqualTo(doubleEquivalent));
@@ -68,7 +60,7 @@ public class AgTypeTests
     [Test]
     public void GetDouble_Should_ReturnDoubleEquivalent_For_NegativeInfinity()
     {
-        var agtype = new AgType("-Infinity");
+        var agtype = new Agtype("-Infinity");
 
         Assert.That(agtype.GetDouble(), Is.EqualTo(double.NegativeInfinity));
     }
@@ -76,7 +68,7 @@ public class AgTypeTests
     [Test]
     public void GetDouble_Should_ReturnDoubleEquivalent_For_PositiveInfinity()
     {
-        var agtype = new AgType("Infinity");
+        var agtype = new Agtype("Infinity");
 
         Assert.That(agtype.GetDouble(), Is.EqualTo(double.PositiveInfinity));
     }
@@ -84,7 +76,7 @@ public class AgTypeTests
     [Test]
     public void GetDouble_Should_ReturnDoubleEquivalent_For_NaN()
     {
-        var agtype = new AgType("NaN");
+        var agtype = new Agtype("NaN");
 
         Assert.That(agtype.GetDouble(), Is.EqualTo(double.NaN));
     }
@@ -92,7 +84,7 @@ public class AgTypeTests
     [Test]
     public void GetDouble_Should_ThrowException_When_AgtypeValueIsNull()
     {
-        var agtype = new AgType(null);
+        var agtype = new Agtype(null);
 
         Assert.That(() => agtype.GetDouble(), Throws.InstanceOf<NullReferenceException>());
     }
@@ -100,7 +92,7 @@ public class AgTypeTests
     [Test]
     public void GetDouble_Should_ThrowException_When_AgtypeValueIsInTheWrongFormat()
     {
-        var agtype = new AgType("true");
+        var agtype = new Agtype("true");
 
         Assert.That(() => agtype.GetDouble(), Throws.InstanceOf<FormatException>());
     }
@@ -113,26 +105,18 @@ public class AgTypeTests
     public void GetInteger_Should_ReturnEquivalentDouble()
     {
         var numString = "1";
-        var agtype = new AgType(numString);
+        var agtype = new Agtype(numString);
         var doubleEquivalent = int.Parse(numString);
 
-        Assert.That(agtype.GetInteger(), Is.EqualTo(doubleEquivalent));
-    }
-
-    [Test]
-    public void GetInteger_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetInteger(), Throws.InstanceOf<NullReferenceException>());
+        Assert.That(agtype.GetInt32(), Is.EqualTo(doubleEquivalent));
     }
 
     [Test]
     public void GetInteger_Should_ThrowException_When_AgtypeValueIsInTheWrongFormat()
     {
-        var agtype = new AgType("true");
+        var agtype = new Agtype("true");
 
-        Assert.That(() => agtype.GetInteger(), Throws.InstanceOf<FormatException>());
+        Assert.That(() => agtype.GetInt32(), Throws.InstanceOf<FormatException>());
     }
 
     #endregion
@@ -143,26 +127,18 @@ public class AgTypeTests
     public void GetLong_Should_ReturnEquivalentDouble()
     {
         var numString = "1";
-        var agtype = new AgType(numString);
+        var agtype = new Agtype(numString);
         var doubleEquivalent = long.Parse(numString);
 
-        Assert.That(agtype.GetLong(), Is.EqualTo(doubleEquivalent));
-    }
-
-    [Test]
-    public void GetLong_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetLong(), Throws.InstanceOf<NullReferenceException>());
+        Assert.That(agtype.GetInt64(), Is.EqualTo(doubleEquivalent));
     }
 
     [Test]
     public void GetLong_Should_ThrowException_When_AgtypeValueIsInTheWrongFormat()
     {
-        var agtype = new AgType("true");
+        var agtype = new Agtype("true");
 
-        Assert.That(() => agtype.GetLong(), Throws.InstanceOf<FormatException>());
+        Assert.That(() => agtype.GetInt64(), Throws.InstanceOf<FormatException>());
     }
 
     #endregion
@@ -173,24 +149,16 @@ public class AgTypeTests
     public void GetDecimal_Should_ReturnEquivalentDouble()
     {
         var numString = "1";
-        var agtype = new AgType(numString);
+        var agtype = new Agtype(numString);
         var doubleEquivalent = decimal.Parse(numString);
 
         Assert.That(agtype.GetDecimal(), Is.EqualTo(doubleEquivalent));
     }
 
     [Test]
-    public void GetDecimal_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetDecimal(), Throws.InstanceOf<NullReferenceException>());
-    }
-
-    [Test]
     public void GetDecimal_Should_ThrowException_When_AgtypeValueIsInTheWrongFormat()
     {
-        var agtype = new AgType("true");
+        var agtype = new Agtype("true");
 
         Assert.That(() => agtype.GetDecimal(), Throws.InstanceOf<FormatException>());
     }
@@ -203,7 +171,7 @@ public class AgTypeTests
     public void GetList_Should_ReturnEquivalentList()
     {
         var list = new List<object?> { 1, 2, "string", null, };
-        var agtype = new AgType("[1, 2, \"string\", null]");
+        var agtype = new Agtype("[1, 2, \"string\", null]");
 
         var agtypeList = agtype.GetList();
 
@@ -225,7 +193,7 @@ public class AgTypeTests
             null,
             new List<object?> { 1, 2, "string", null },
         };
-        var agtype = new AgType("[1, 2, \"string\", null, [1, 2, \"string\", null]]");
+        var agtype = new Agtype("[1, 2, \"string\", null, [1, 2, \"string\", null]]");
 
         var agtypeList = agtype.GetList();
 
@@ -240,7 +208,7 @@ public class AgTypeTests
     public void GetList_Should_ReturnNegativeInfinity_When_Supplied_NegativeInfinity()
     {
         var list = new List<object?> { 1, 2, double.NegativeInfinity, };
-        var agtype = new AgType("[1, 2, \"-Infinity\"]");
+        var agtype = new Agtype("[1, 2, \"-Infinity\"]");
 
         var agtypeList = agtype.GetList(true);
 
@@ -251,14 +219,6 @@ public class AgTypeTests
         });
     }
 
-    [Test]
-    public void GetList_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetList(), Throws.InstanceOf<NullReferenceException>());
-    }
-
     #endregion
 
     #region GetVertex()
@@ -266,96 +226,128 @@ public class AgTypeTests
     [Test]
     public void GetVertex_Should_ReturnEquivalentVertex()
     {
-        var agtype = new AgType("{\"id\": 0, \"label\": \"Person\", \"properties\": {\"name\": \"Emmanuel\", \"age\": 21}}::vertex");
-
-        var vertex = agtype.GetVertex();
+        var vertex = new Vertex
+        {
+            Id = new(2343953235),
+            Label = "Person",
+            Properties = new()
+            { 
+                { "name", "Emmanuel" },
+                { "age", 22 },
+            },
+        };
+        var agtype = new Agtype(vertex.ToString());
+        var generatedVertex = agtype.GetVertex();
 
         Assert.Multiple(() =>
         {
-            Assert.That(vertex, Is.Not.Null);
-            Assert.That(vertex.Id, Is.EqualTo(0));
-            Assert.That(vertex.Label, Is.EqualTo("Person"));
-            Assert.That(vertex.Properties!["name"], Is.EqualTo("Emmanuel"));
-            Assert.That(vertex.Properties!["age"], Is.EqualTo(21));
+            Assert.That(generatedVertex.Id, Is.EqualTo(vertex.Id));
+            Assert.That(generatedVertex.Label, Is.EqualTo(vertex.Label));
+            Assert.That(generatedVertex.Properties, Is.EquivalentTo(vertex.Properties));
         });
     }
-
-    [Test]
-    public void GetVertex_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetVertex(), Throws.InstanceOf<NullReferenceException>());
-    }
-
     #endregion
 
     #region GetEdge()
 
     [Test]
-    public void GetEdge_Should_ReturnEquivalentVertex()
+    public void GetEdge_Should_ReturnEquivalentEdge()
     {
-        var agtype = new AgType("{\"id\": 2, \"label\": \"KNOWS\", \"end_id\": 1, \"start_id\": 0, \"properties\": {\"colour\": \"red\"}}::path");
-
-        var edge = agtype.GetEdge();
+        var edge = new Edge
+        {
+            Id = new(2),
+            StartId = new(0),
+            EndId = new(1),
+            Label = "Edge_label",
+            Properties = new() { { "colour", "red" }, },
+        };
+        var agtype = new Agtype(edge.ToString());
+        var generatedEdge = agtype.GetEdge();
 
         Assert.Multiple(() =>
         {
-            Assert.That(edge, Is.Not.Null);
-            Assert.That(edge.Id, Is.EqualTo(2));
-            Assert.That(edge.Label, Is.EqualTo("KNOWS"));
-            Assert.That(edge.StartId, Is.EqualTo(0));
-            Assert.That(edge.EndId, Is.EqualTo(1));
-            Assert.That(edge.Properties!["colour"], Is.EqualTo("red"));
+            Assert.That(generatedEdge.Id, Is.EqualTo(edge.Id));
+            Assert.That(generatedEdge.Label, Is.EqualTo(edge.Label));
+            Assert.That(generatedEdge.StartId, Is.EqualTo(edge.StartId));
+            Assert.That(generatedEdge.EndId, Is.EqualTo(edge.EndId));
+            Assert.That(generatedEdge.Properties, Is.EquivalentTo(edge.Properties));
         });
     }
-
-    [Test]
-    public void GetEdge_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetEdge(), Throws.InstanceOf<NullReferenceException>());
-    }
-
     #endregion
 
     #region GetPath()
 
     [Test]
-    public void GetPath_Should_ReturnEquivalentVertex()
+    public void GetPath_Should_ReturnEquivalentPath()
     {
-        var agtype = new AgType("[{\"id\": 0, \"label\": \"label_name_1\", \"properties\": {\"i\": 0}}::vertex, {\"id\": 2, \"label\": \"edge_label\", \"end_id\": 1, \"start_id\": 0, \"properties\": {\"i\": 0}}::path,\r\n{\"id\": 1, \"label\": \"label_name_2\", \"properties\": {}}::vertex]::path");
-
+        Vertex[] vertices =
+        [
+            new Vertex
+            {
+                Id = new(0),
+                Label = "Label_name_1",
+                Properties = new() { { "i", 0 }, },
+            },
+            new Vertex
+            {
+                Id = new(2),
+                Label = "Label_name_1",
+                Properties = [],
+            }
+        ];
+        var edge = new Edge
+        {
+            Id = new(2),
+            StartId = vertices[0].Id,
+            EndId = vertices[1].Id,
+            Label = "Edge_label",
+            Properties = [],
+        };
+        var agtype = new Agtype($"[{vertices[0]}, {edge}, {vertices[1]}]{Types.Path.FOOTER}");
         var path = agtype.GetPath();
 
         Assert.Multiple(() =>
         {
-            Assert.That(path, Is.Not.Null);
-            Assert.That(path, Has.Length.EqualTo(3));
-            for (int i = 0; i < 2; i++)
-            {
-                if (i % 2 == 0)
-                    Assert.That(path[i], Is.InstanceOf<Vertex>());
-                else
-                    Assert.That(path[i], Is.InstanceOf<Edge>());
-            }
-            Assert.That(((Vertex)path[0]).Label, Is.EqualTo("label_name_1"));
+            Assert.That(path.Length, Is.EqualTo(1));
+            Assert.That(path.Vertices, Has.Length.EqualTo(2));
+            Assert.That(path.Edges, Has.Length.EqualTo(1));
+            Assert.That(path.Vertices, Is.EquivalentTo(vertices));
+            Assert.That(path.Vertices[1].Properties, Is.EquivalentTo(vertices[1].Properties));
+            Assert.That(path.Edges[0], Is.EqualTo(edge));
         });
     }
 
     [Test]
-    public void GetPath_Should_ThrowException_When_AgtypeValueIsNull()
-    {
-        var agtype = new AgType(null);
-
-        Assert.That(() => agtype.GetPath(), Throws.InstanceOf<NullReferenceException>());
-    }
-    
-    [Test]
     public void GetPath_Should_ThrowException_When_AgtypeValueIsInWrongFormat()
     {
-        var agtype = new AgType("[{\"id\": 0, \"label\": \"label_name_1\", \"properties\": {\"i\": 0}}, 4,\r\n{\"id\": 1, \"label\": \"label_name_2\", \"properties\": {}}::vertex]");
+        Vertex[] vertices =
+        [
+            new Vertex
+            {
+                Id = new(0),
+                Label = "Label_name_1",
+                Properties = new()
+                {
+                    { "i", 0 },
+                },
+            },
+            new Vertex
+            {
+                Id = new(2),
+                Label = "Label_name_1",
+                Properties = [],
+            }
+        ];
+        var edge = new Edge
+        {
+            Id = new(2),
+            StartId = vertices[0].Id,
+            EndId = vertices[1].Id,
+            Label = "Edge_label",
+            Properties = [],
+        };
+        // Omit the path footer.
+        var agtype = new Agtype($"[{vertices[0]}, {edge}, {vertices[1]}]");
 
         Assert.That(() => agtype.GetPath(), Throws.InstanceOf<FormatException>());
     }

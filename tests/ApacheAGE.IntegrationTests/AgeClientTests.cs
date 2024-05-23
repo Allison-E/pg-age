@@ -39,4 +39,25 @@ $$) AS (num agtype);");
 
         await DropTempGraphAsync(graphName);
     }
+
+    [Test]
+    public async Task GraphExistsAsync_Should_ReturnTrueIfGraphExists()
+    {
+        await using var client = CreateAgeClient();
+        var graphName = await CreateTempGraphAsync();
+
+        await client.OpenConnectionAsync();
+        var graphExists = await client.GraphExistsAsync(graphName);
+        Assert.That(graphExists, Is.True);
+    }
+
+    [Test]
+    public async Task GraphExistsAsync_Should_ReturnFalseIfGraphExists()
+    {
+        await using var client = CreateAgeClient();
+
+        await client.OpenConnectionAsync();
+        var graphExists = await client.GraphExistsAsync("sidjfa23knlsd9a8dfndfhjbnzxeunjakssdf3sdmvns_asdjfk");
+        Assert.That(graphExists, Is.False);
+    }
 }

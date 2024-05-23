@@ -21,8 +21,11 @@ namespace ApacheAGE
 
         internal AgeClient(string connectionString, AgeConfiguration configuration)
         {
-            _dataSource = new NpgsqlDataSourceBuilder(connectionString)
-                .Build();
+            var builder = new NpgsqlDataSourceBuilder(connectionString);
+
+            builder.UseAge();
+
+            _dataSource = builder.Build();
             _configuration = configuration;
         }
 
@@ -72,6 +75,9 @@ namespace ApacheAGE
             CancellationToken cancellationToken = default)
         {
             CheckForExistingConnection();
+
+            if (await GraphExistsAsync(graphName, cancellationToken))
+                return;
 
             await using var command = new NpgsqlCommand(
                 "SELECT * FROM create_graph($1);",
@@ -254,6 +260,49 @@ namespace ApacheAGE
                     e);
 
                 throw new AgeException($"Could not execute query.", e);
+            }
+        }
+
+        public async Task<bool> GraphExistsAsync(
+            string graphName,
+            CancellationToken cancellationToken = default)
+        {
+            CheckForExistingConnection();
+
+            await using var command = new NpgsqlCommand(
+                "SELECT * FROM ag_catalog.ag_graph WHERE name = $1;",
+                _connection)
+            {
+                Parameters =
+                    {
+                        new() { Value = graphName },
+                    }
+            };
+
+            try
+            {
+                object? result = await command.ExecuteScalarAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (result is null)
+                {
+                    LogMessages.GraphExists(
+                        _configuration!.Logger.CommandLogger,
+                        graphName);
+
+                    return false;
+                }
+
+                LogMessages.GraphDoesNotExist(
+                        _configuration!.Logger.CommandLogger,
+                        graphName);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogMessages.UnknownError(_configuration!.Logger.CommandLogger, e);
+                throw new AgeException($"An error occurred.", e);
             }
         }
 

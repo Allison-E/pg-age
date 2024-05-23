@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ApacheAGE.Data;
+using ApacheAGE.Types;
 
 namespace ApacheAGE.JsonConverters
 {
-    internal class PathConverter: JsonConverter<object>
+    /// <summary>
+    /// A custom converter to convert JSON objects to vertices and edges in a path and
+    /// vice versa.
+    /// </summary>
+    internal class PathObjectConverter: JsonConverter<object>
     {
         private int _counter = 0;
 
@@ -22,25 +26,16 @@ namespace ApacheAGE.JsonConverters
              * all vertices will fall on even numbers and edges will fall on odd numbers.
              */
 
-            string json;
-            var serializingOptions = new JsonSerializerOptions
-            {
-                AllowTrailingCommas = true,
-                Converters = { new InferredObjectConverter() },
-                PropertyNameCaseInsensitive = true,
-                NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            };
+            string json = JsonDocument.ParseValue(ref reader).RootElement.GetRawText();
+            object? result;
 
             if (_counter % 2 == 0)
-            {
-                json = JsonDocument.ParseValue(ref reader).RootElement.GetRawText();
-                _counter++;
-                return JsonSerializer.Deserialize<Vertex>(json, serializingOptions);
-            }
+                result = JsonSerializer.Deserialize<Vertex>(json, SerializerOptions.Default);
+            else
+                result = JsonSerializer.Deserialize<Edge>(json, SerializerOptions.Default);
 
-            json = JsonDocument.ParseValue(ref reader).RootElement.GetRawText();
             _counter++;
-            return JsonSerializer.Deserialize<Edge>(json, serializingOptions);
+            return result;
         }
 
         public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)

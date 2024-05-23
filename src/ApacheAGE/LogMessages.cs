@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ApacheAGE
 {
-    public static partial class LogMessages
+    internal static partial class LogMessages
     {
         #region Connection
 
@@ -164,6 +164,22 @@ namespace ApacheAGE
         public static partial void QueryExecuted(
             ILogger logger,
             string query);
+        
+        [LoggerMessage(
+            EventId = AgeClientEventId.GRAPH_EXISTS,
+            Level = LogLevel.Information,
+            Message = "Graph '{graph}' exists")]
+        public static partial void GraphExists(
+            ILogger logger,
+            string graph);
+        
+        [LoggerMessage(
+            EventId = AgeClientEventId.GRAPH_DOES_NOT_EXIST,
+            Level = LogLevel.Information,
+            Message = "Graph '{graph}' does not exist")]
+        public static partial void GraphDoesNotExist(
+            ILogger logger,
+            string graph);
 
         #region Error logs
 
@@ -199,5 +215,13 @@ namespace ApacheAGE
 
         #endregion
         #endregion
+
+        [LoggerMessage(
+            EventId = AgeClientEventId.UNKNOWN_ERROR,
+            Level = LogLevel.Error,
+            Message = "Uknown error occurred")]
+        public static partial void UnknownError(
+            ILogger logger,
+            Exception exception);
     }
 }

@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Npgsql;
+﻿using Npgsql;
 
 namespace ApacheAGE.IntegrationTests;
 
 internal class TestBase
 {
     private static string _defaultConnectionString =
-        "Server=localhost;Port=5432;Username=agedotnet;Password=agedotnet;Database=agedotnet_tests;";
+        "Server=localhost;Port=5432;Database=agedotnet_tests;";
 
     protected string ConnectionString =>
         Environment.GetEnvironmentVariable("AGE_TEST_DB") ?? _defaultConnectionString;
@@ -25,7 +24,7 @@ internal class TestBase
 
     protected async Task<string> CreateTempGraphAsync()
     {
-        var graphName = "temp_graph" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        var graphName = "temp_graph" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
         await using var client = CreateAgeClient();
         await client.OpenConnectionAsync();
         await client.CreateGraphAsync(graphName);
