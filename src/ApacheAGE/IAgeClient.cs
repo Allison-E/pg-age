@@ -31,7 +31,7 @@ namespace ApacheAGE
         Task OpenConnectionAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Create a graph.
+        /// Create a graph if it doesn't exist.
         /// </summary>
         /// <param name="graphName">
         /// Graph name.
@@ -121,5 +121,15 @@ namespace ApacheAGE
         /// A <see cref="Task"/> for monitoring the progress of the operation.
         /// </returns>
         Task CloseConnectionAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Checks if graph exists in the database.
+        /// </summary>
+        /// <param name="graphName">Graph name.</param>
+        /// <param name="cancellationToken">
+        /// Token for propagating a notification  stop the running operation.
+        /// </param>
+        /// <returns><see langword="true"/> if it exists, otherwise <see langword="false"/>.</returns>
+        Task<bool> GraphExistsAsync(string graphName, CancellationToken cancellationToken = default);
     }
 }

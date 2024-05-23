@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Npgsql;
+﻿using Npgsql;
 
 namespace ApacheAGE.IntegrationTests;
 
@@ -25,7 +24,7 @@ internal class TestBase
 
     protected async Task<string> CreateTempGraphAsync()
     {
-        var graphName = "temp_graph" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        var graphName = "temp_graph" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
         await using var client = CreateAgeClient();
         await client.OpenConnectionAsync();
         await client.CreateGraphAsync(graphName);

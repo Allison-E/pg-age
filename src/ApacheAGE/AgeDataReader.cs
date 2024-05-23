@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Data;
 using System.Threading.Tasks;
-using ApacheAGE.Data;
 using Npgsql;
 
 namespace ApacheAGE
@@ -14,11 +12,6 @@ namespace ApacheAGE
         private readonly NpgsqlDataReader _reader;
         private bool _isDisposed = false;
 
-        public int FieldCount => _reader.FieldCount;
-        public bool IsOnRow => _reader.IsOnRow;
-        public bool HasRows => _reader.HasRows;
-        public bool IsClosed => _reader.IsClosed;
-
         /// <summary>
         /// Initialises a new instance of <see cref="AgeDataReader"/>.
         /// </summary>
@@ -29,29 +22,28 @@ namespace ApacheAGE
             _reader = reader;
         }
 
+        public int FieldCount => _reader.FieldCount;
+        public bool IsOnRow => _reader.IsOnRow;
+        public bool HasRows => _reader.HasRows;
+        public bool IsClosed => _reader.IsClosed;
+
         public void Close() => _reader.Close();
 
         public void CloseAsync() => _reader.CloseAsync();
 
+        public bool Read() => _reader.Read();
+
         public Task<bool> ReadAsync() => _reader.ReadAsync();
 
-        public AgeRowSet GetValues()
+        public int GetValues(object[] values) => _reader.GetValues(values);
+
+        public T? GetValue<T>(int ordinal) => _reader.GetFieldValueAsync<T?>(ordinal).GetAwaiter().GetResult();
+
+        public async Task<T?> GetValueAsync<T>(int ordinal)
         {
-            object[] values = new object[FieldCount];
-
-            _ = _reader.GetValues(values);
-
-            return new(values);
-        }
-
-        public AgType GetValue(int ordinal)
-        {
-            var value = _reader.GetValue(ordinal);
-
-            if (value is DBNull)
-                value = null;
-
-            return new(value);
+            var value = await _reader.GetFieldValueAsync<T?>(ordinal)
+                .ConfigureAwait(false);
+            return value;
         }
 
         public string GetName(int ordinal) => _reader.GetName(ordinal);

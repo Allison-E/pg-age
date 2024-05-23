@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using ApacheAGE.Data;
 
 namespace ApacheAGE
 {
@@ -62,23 +61,46 @@ namespace ApacheAGE
         int GetOrdinal(string name);
 
         /// <summary>
-        /// Gets the value of a specified column as an instance of <see cref="AgType"/>.
+        /// Gets the value of a specified column as an instance of <typeparamref name="T"/>.
         /// </summary>
         /// <param name="ordinal">
         /// Zero-based column ordinal.
         /// </param>
         /// <returns>
-        /// The column's <see cref="AgType"/> value.
+        /// The column's <typeparamref name="T"/> value.
         /// </returns>
-        AgType GetValue(int ordinal);
+        T? GetValue<T>(int ordinal);
 
         /// <summary>
-        /// Gets the entire row fields as a row set.
+        /// Gets the value of a specified column as an instance of <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="ordinal">
+        /// Zero-based column ordinal.
+        /// </param>
+        /// <returns>
+        /// The column's <typeparamref name="T"/> value.
+        /// </returns>
+        Task<T?> GetValueAsync<T>(int ordinal);
+
+        /// <summary>
+        /// Populates an array of objects with the field values of the current row.
+        /// </summary>
+        /// <param name="values">
+        /// Array of objects to populate.
+        /// </param>
+        /// <returns>
+        /// The number of fields returned.
+        /// </returns>
+        int GetValues(object[] values);
+
+        /// <summary>
+        /// Advances the reader to the next record in the result set.
         /// </summary>
         /// <returns>
-        /// An <see cref="AgeRowSet"/>.
+        /// Returns <see langword="true"/> if there are more rows, otherwise, 
+        /// <see langword="false"/>.
         /// </returns>
-        AgeRowSet GetValues();
+        bool Read();
 
         /// <summary>
         /// Asynchronously advances the reader to the next record in the result set.

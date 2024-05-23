@@ -5,15 +5,25 @@ using System.Text.Json.Serialization;
 
 namespace ApacheAGE.JsonConverters
 {
+    /// <summary>
+    /// A custom converter to infer object types from their JSON token type.
+    /// <para>
+    /// For example, numbers in the json will be returned as a valid number type
+    /// in C# (<see langword="int"/>, <see langword="long"/>, <see langword="decimal"/>, or 
+    /// <see langword="double"/>).
+    /// </para>
+    /// </summary>
     internal class InferredObjectConverter: JsonConverter<object>
     {
         public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             switch (reader.TokenType)
             {
+                // If it's a '[' token, parse it as an array.
                 case JsonTokenType.StartArray:
                     return JsonDocument.ParseValue(ref reader).Deserialize<List<object?>>(options);
 
+                // Parse 'Infinity', '-Infinity', and 'NaN' as doubles instead of strings if required.
                 case JsonTokenType.String:
                     if ((options.NumberHandling & JsonNumberHandling.AllowNamedFloatingPointLiterals) != 0)
                     {
@@ -25,7 +35,11 @@ namespace ApacheAGE.JsonConverters
                             return double.NaN;
                     }
                     return reader.GetString()!;
-
+                
+                // Parse number.
+                // First, try to parse it as an int. If that doesn't work, parse it as a long.
+                // And if that doesn't work, go on to parse it as a decimal.
+                // Finally, if decimal doesn't work, parse it as a double.
                 case JsonTokenType.Number:
                     if (reader.TryGetInt32(out int integer))
                         return integer;

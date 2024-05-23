@@ -1,6 +1,6 @@
 ﻿namespace ApacheAGE
 {
-    public static class AgeClientEventId
+    internal static class AgeClientEventId
     {
         #region Connection
         public const int CONNECTION_OPENED      = 1000;
@@ -26,7 +26,9 @@
 
         #region Commands
         public const int GRAPH_CREATED                  = 3001;
-        public const int GRAPH_DROPPED                  = 3003;
+        public const int GRAPH_DROPPED                  = 3002;
+        public const int GRAPH_EXISTS                   = 3003;
+        public const int GRAPH_DOES_NOT_EXIST           = 3004;
 
         public const int CYPHER_EXECUTED    = 3101;
         public const int QUERY_EXECUTED     = 3102;
@@ -37,7 +39,6 @@
         public const int QUERY_EXECUTION_ERROR      = 3903;
         #endregion
 
-        #region Command
-        #endregion
+        public const int UNKNOWN_ERROR              = 9900;
     }
 }
